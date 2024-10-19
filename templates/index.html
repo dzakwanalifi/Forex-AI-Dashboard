@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forex AI Trader Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    {% assets "css_all" %}
+        <link rel="stylesheet" href="{{ ASSET_URL }}">
+    {% endassets %}
+    <style>
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: calc(100% - 110px); /* Adjust this value based on your header and input heights */
+            overflow-y: auto;
+        }
+        .chat-message {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+        .user-message {
+            align-self: flex-end;
+            background-color: #DCF8C6;
+            color: #000;
+        }
+        .assistant-message {
+            align-self: flex-start;
+            background-color: #E5E5EA;
+            color: #000;
+        }
+        .loading-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .chat-loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+        }
+        .markdown-content h1 { font-size: 1.5em; font-weight: bold; margin-top: 1em; }
+        .markdown-content h2 { font-size: 1.3em; font-weight: bold; margin-top: 0.8em; }
+        .markdown-content h3 { font-size: 1.1em; font-weight: bold; margin-top: 0.6em; }
+        .markdown-content p { margin-bottom: 0.5em; }
+        .markdown-content ul, .markdown-content ol { margin-left: 1.5em; margin-bottom: 0.5em; }
+        .markdown-content li { margin-bottom: 0.3em; }
+        .markdown-content strong { font-weight: bold; }
+        .markdown-content em { font-style: italic; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="bg-gray-50 flex flex-col min-h-screen font-inter">
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-8 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">Forex AI Trader Dashboard</h1>
+            <div>
+                <a href="/all-news" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-300">News</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-8 py-8">
+        <!-- Economic Indicators Section -->
+        <div id="economic-indicators" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
+            <!-- USD/IDR card akan diinjeksi sebagai elemen pertama di sini -->
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <!-- Exchange Rate and Forecast Chart -->
+            <div class="lg:col-span-2 bg-white rounded-lg shadow-md overflow-hidden flex flex-col" style="height: 500px;">
+                <h2 class="text-xl font-semibold p-4 bg-gray-50 border-b">USD/IDR Exchange Rate and Forecast</h2>
+                <div class="p-4 flex flex-col flex-grow">
+                    <div class="flex justify-between mb-4">
+                        <div>
+                            <label for="historical-days" class="mr-2">Historical Days:</label>
+                            <select id="historical-days" class="border rounded px-2 py-1">
+                                <option value="60">60 days</option>
+                                <option value="30" selected>30 days</option>
+                                <option value="14">14 days</option>
+                                <option value="7">7 days</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="forecast-days" class="mr-2">Forecast Days:</label>
+                            <select id="forecast-days" class="border rounded px-2 py-1">
+                                <option value="14" selected>14 days</option>
+                                <option value="7">7 days</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex-grow relative">
+                        <canvas id="usd-idr-chart" class="w-full h-full absolute inset-0"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Trading Assistant -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col" style="height: 500px;">
+                <h2 class="text-xl font-semibold p-4 bg-gray-50 border-b">AI Trading Assistant</h2>
+                <div id="chat-history" class="chat-container flex-grow p-4 bg-gray-50">
+                    <!-- Dynamic chat messages will be injected here -->
+                </div>
+                <div id="chat-loading" class="chat-loading">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                </div>
+                <div class="p-4 bg-white border-t">
+                    <div class="flex space-x-2">
+                        <input id="ai-question" type="text" placeholder="Ask a question..." class="flex-grow px-4 py-2 border rounded-l-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button id="send-question" class="px-6 py-2 bg-blue-500 text-white rounded-r-full hover:bg-blue-600 transition duration-300">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Insight Section -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+            <h2 class="text-xl font-semibold p-4 bg-gray-50 border-b">AI Insight</h2>
+            <div class="p-4">
+                <div id="ai-insight-content">
+                    <!-- AI Insight content will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Latest News Section -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <h2 class="text-xl font-semibold p-4 bg-gray-50 border-b">Latest News</h2>
+            <div class="p-4">
+                <div class="overflow-x-auto scrollbar-hide">
+                    <div id="news-items" class="flex space-x-6 pb-4">
+                        <!-- Dynamic news items will be injected here -->
+                    </div>
+                </div>
+                <div class="text-center mt-4">
+                    <a href="/all-news" class="px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-300">View All News</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Popup -->
+    <div id="loading-popup" class="loading-popup">
+        <div class="loading-content">
+            <p>Sedang memuat data dan memprediksi...</p>
+            <div class="mt-2">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white border-t mt-8">
+        <div class="container mx-auto px-8 py-6 text-center text-sm text-gray-600">
+            <p>Disclaimer: This dashboard is for informational purposes only. Trading forex carries a high level of risk.</p>
+        </div>
+    </footer>
+
+    {% assets "js_all" %}
+        <script src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+</body>
+</html>

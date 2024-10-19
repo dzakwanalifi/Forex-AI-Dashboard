@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #ffffff;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 1rem 0;
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h1 {
+    font-size: 1.5rem;
+    color: white;
+}
+
+button {
+    background-color: #45a049;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #3d8b40;
+}
+
+main {
+    padding: 2rem 0;
+}
+
+.indicators-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.economic-indicator {
+    @apply bg-white p-4 rounded-lg shadow-md transition duration-300 ease-in-out hover:shadow-lg;
+}
+
+.economic-indicator-title {
+    @apply text-sm font-medium text-gray-600;
+}
+
+.economic-indicator-value {
+    @apply text-2xl font-bold text-gray-800;
+}
+
+.trend-icon {
+    @apply w-4 h-4;
+}
+
+.trend-up {
+    @apply text-green-500;
+}
+
+.trend-down {
+    @apply text-red-500;
+}
+
+.trend-neutral {
+    @apply text-gray-400;
+}
+
+.chart-container {
+    @apply bg-white rounded-lg shadow-md overflow-hidden;
+}
+
+.chart-title {
+    @apply text-xl font-semibold p-4 bg-gray-50 border-b;
+}
+
+.ai-assistant {
+    @apply bg-white rounded-lg shadow-md overflow-hidden;
+}
+
+.chat-history {
+    @apply h-[300px] overflow-y-auto mb-4 space-y-3 p-3 bg-gray-50 rounded;
+}
+
+.user-message {
+    @apply text-right mb-2;
+}
+
+.assistant-message {
+    @apply text-left mb-2;
+}
+
+.message-bubble {
+    @apply inline-block p-3 rounded-lg;
+}
+
+.user-bubble {
+    @apply bg-blue-500 text-white;
+}
+
+.assistant-bubble {
+    @apply bg-gray-200 text-gray-800;
+}
+
+.news-container {
+    @apply bg-white rounded-lg shadow-md overflow-hidden;
+}
+
+.news-item {
+    @apply w-[300px] flex-shrink-0 bg-white p-4 rounded-lg shadow-md;
+}
+
+.news-title {
+    @apply text-sm font-semibold mb-2 hover:text-blue-600 transition duration-300;
+}
+
+.news-summary {
+    @apply text-xs text-gray-600 mb-2;
+}
+
+.news-meta {
+    @apply text-xs text-gray-400;
+}
+
+.button {
+    @apply px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+}
+
+.input {
+    @apply flex-grow px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Responsivitas */
+@media (max-width: 768px) {
+    .indicators-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .chart-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .ai-assistant {
+        height: 400px;
+    }
+}
+
+@media (max-width: 480px) {
+    .indicators-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Animasi */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.economic-indicator,
+.chat-message,
+.news-item {
+    animation: fadeIn 0.5s ease-in-out;
+}
