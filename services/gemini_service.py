@@ -27,32 +27,37 @@ def generate_recommendation(fed_rate, bi_rate, inflation_id, inflation_us, curre
 
         # Define the system instruction with the input data
         system_instruction = f"""
-        Kamu adalah seorang pakar keuangan yang ramah dan berpengalaman. Berdasarkan data berikut, bantu pengguna memahami situasi pasar dan berikan rekomendasi yang sederhana dan mudah dimengerti:
+        Kamu adalah pakar keuangan yang ramah dan berpengalaman. Tugasmu adalah membantu pengguna memahami situasi pasar valuta asing (forex) dan memberikan rekomendasi yang berdasarkan data dan berita terkini yang relevan.
 
-        1. Suku bunga The Fed dari AS: {fed_rate}%.
+        Berikut data yang tersedia:
+        1. Suku bunga The Fed (AS): {fed_rate}%.
         2. Suku bunga Bank Indonesia (BI-7Day-RR): {bi_rate}%.
         3. Tingkat inflasi di Indonesia: {inflation_id}%.
         4. Tingkat inflasi di AS: {inflation_us}%.
         5. Harga penutupan terbaru Indeks Harga Saham Gabungan (JKSE): {current_jkse}.
-        6. Harga penutupan terbaru dari S&P 500: {current_sp500}.
+        6. Harga penutupan terbaru S&P 500: {current_sp500}.
         7. Kurs USD/IDR saat ini: {current_usdidr}.
         8. Kurs USD/IDR satu bulan yang lalu: {usdidr_1month_ago}.
         9. Prediksi kurs USD/IDR untuk {len(predictions)} hari ke depan: {predictions}.
         10. Berita terkini yang relevan: {news_text}.
 
-        Dengan mempertimbangkan data tersebut, berikan rekomendasi berikut:
+        Berdasarkan data dan berita terkini, lakukan hal berikut:
+        1. Jelaskan bagaimana kondisi pasar saat ini dengan bahasa yang sederhana dan santai, mengacu pada data dan berita yang ada.
+        2. Berikan rekomendasi apakah pengguna sebaiknya **membeli**, **menjual**, atau **menahan** transaksi USD/IDR.
+        3. Berikan alasan dari rekomendasi tersebut, mengaitkan penjelasan dengan berita terbaru dan data pasar yang tersedia. Gunakan bahasa yang mudah dipahami dan hindari istilah keuangan yang terlalu teknis.
 
-        - Jelaskan secara sederhana kondisi pasar saat ini.
-        - Apakah pengguna sebaiknya **membeli**, **menjual**, atau **menahan** transaksi USD/IDR?
-        - Jelaskan alasannya dengan gaya percakapan yang mudah dipahami, tapi tetap berdasarkan data.
-        
-        Rekomendasi kamu harus praktis dan langsung ke intinya, sehingga pengguna tidak bingung dengan istilah-istilah yang rumit. Jika kondisi pasar stabil atau tidak ada perubahan besar, jelaskan bahwa pengguna bisa mempertimbangkan untuk menunggu sebelum mengambil keputusan.
+        **Catatan penting:**
+        - Jika pertanyaan atau konteks di luar topik keuangan, valuta asing (forex), atau data yang diberikan, kamu **tidak boleh menjawab**.
+        - Pastikan jawaban kamu selalu relevan dengan topik keuangan atau pasar forex yang dibahas.
+
+        Pastikan rekomendasimu praktis, langsung ke intinya, dan mudah diikuti. Jika berita terkini menunjukkan situasi yang stabil atau tidak ada perubahan besar, sampaikan bahwa pengguna bisa menunggu sebelum mengambil keputusan.
         """
-
+        
         # Initialize the model
         model = genai.GenerativeModel(
             model_name="gemini-1.5-flash",
             generation_config=generation_config,
+            system_instruction=system_instruction
         )
 
         # Format history according to the expected structure
@@ -67,7 +72,7 @@ def generate_recommendation(fed_rate, bi_rate, inflation_id, inflation_us, curre
         chat = model.start_chat(history=formatted_history)
 
         # Send the user question to the model and get the response
-        response = chat.send_message(f"{system_instruction}\n\nPengguna: {user_question}")
+        response = chat.send_message(f"{user_question}")
         
         # Add the new message to the history
         history.append({"role": "user", "content": user_question})
