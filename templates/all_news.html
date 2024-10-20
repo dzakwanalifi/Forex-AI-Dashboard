@@ -3,30 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All News - Forex AI Trader Dashboard</title>
+    <title>FOR/TRIX - All News</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     {% assets "css_all" %}
         <link rel="stylesheet" href="{{ ASSET_URL }}">
     {% endassets %}
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 flex flex-col min-h-screen font-inter">
-    <header class="bg-white shadow-sm">
-        <div class="container mx-auto px-8 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-800">All News</h1>
-            <a href="/" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-300">Back to Dashboard</a>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+    <header class="bg-gradient-to-r from-blue-600 to-blue-800 shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white">
+                FOR/TRIX
+            </h1>
+            <nav>
+                <a href="/" class="px-4 py-2 bg-white text-blue-600 rounded-full hover:bg-blue-100 transition duration-300 flex items-center">
+                    <i class="fas fa-chart-line mr-2"></i>
+                    Dashboard
+                </a>
+            </nav>
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto px-8 py-8">
-        <div id="all-news-items" class="space-y-6">
-            <!-- All news items will be injected here -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <h2 class="text-3xl font-bold mb-6 text-gray-800">All News</h2>
+        <div id="all-news-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- News items will be dynamically inserted here -->
         </div>
     </main>
 
     <footer class="bg-white border-t mt-8">
         <div class="container mx-auto px-8 py-6 text-center text-sm text-gray-600">
-            <p>Disclaimer: This dashboard is for informational purposes only. Trading forex carries a high level of risk.</p>
+            <p>Disclaimer: This news feed is for informational purposes only. Trading forex carries a high level of risk.</p>
         </div>
     </footer>
 
@@ -34,35 +48,42 @@
         <script src="{{ ASSET_URL }}"></script>
     {% endassets %}
     <script>
-        document.addEventListener('DOMContentLoaded', fetchAllNews);
-
-        function fetchAllNews() {
+        document.addEventListener('DOMContentLoaded', function() {
             fetch('/api/news')
                 .then(response => response.json())
                 .then(data => {
-                    const newsContainer = document.getElementById('all-news-items');
-                    newsContainer.innerHTML = '';
-
-                    data.news.forEach(item => {
-                        const newsHtml = `
-                            <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
-                                <a href="${item.link || '#'}" target="_blank" rel="noopener noreferrer" class="flex items-start">
-                                    <img src="${item.image || '/static/images/placeholder-image.jpg'}" alt="${item.headline}" class="w-32 h-32 object-cover rounded-md mr-6">
-                                    <div>
-                                        <h3 class="text-xl font-semibold mb-2 hover:text-blue-600 transition duration-300">${item.headline || 'No headline'}</h3>
-                                        <p class="text-gray-600 mb-2">${item.summary || 'No summary available'}</p>
-                                        <p class="text-sm text-gray-400">${item.source || 'Unknown source'} - ${item.date ? new Date(item.date).toLocaleDateString() : 'No date'}</p>
+                    const newsContainer = document.getElementById('all-news-container');
+                    if (data.news && Array.isArray(data.news)) {
+                        data.news.forEach(item => {
+                            const newsHtml = `
+                                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                                    <img src="${item.image || '/static/images/placeholder-image.jpg'}" alt="${item.headline}" class="w-full h-48 object-cover">
+                                    <div class="p-4">
+                                        <h3 class="text-lg font-semibold mb-2 hover:text-blue-600 transition-colors duration-300">
+                                            <a href="${item.link || '#'}" target="_blank" rel="noopener noreferrer">${item.headline || 'No headline'}</a>
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mb-4">${item.summary || 'No summary available'}</p>
+                                        <div class="flex justify-between items-center text-xs text-gray-500">
+                                            <span class="flex items-center">
+                                                <i class="fas fa-newspaper mr-1"></i>
+                                                ${item.source || 'Unknown source'}
+                                            </span>
+                                            <span>${item.date ? new Date(item.date).toLocaleDateString() : 'No date'}</span>
+                                        </div>
                                     </div>
-                                </a>
-                            </div>`;
-                        newsContainer.insertAdjacentHTML('beforeend', newsHtml);
-                    });
+                                </div>`;
+                            newsContainer.insertAdjacentHTML('beforeend', newsHtml);
+                        });
+                    } else {
+                        newsContainer.innerHTML = '<p class="text-red-500 col-span-full">No news available at the moment.</p>';
+                    }
                 })
                 .catch(error => {
-                    console.error('Error fetching all news:', error);
-                    document.getElementById('all-news-items').innerHTML = `<p class="text-red-500 text-center">Error loading news: ${error.message}. Please try again later.</p>`;
+                    console.error('Error fetching news:', error);
+                    const newsContainer = document.getElementById('all-news-container');
+                    newsContainer.innerHTML = `<p class="text-red-500 col-span-full">Error loading news: ${error.message}. Please try again later.</p>`;
                 });
-        }
+        });
     </script>
 </body>
 </html>

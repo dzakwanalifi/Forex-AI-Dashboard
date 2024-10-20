@@ -77,7 +77,7 @@ def get_or_update_predictions(forecast_days=14):
 
 @app.route('/')
 def index():
-    return render_template('index.html') 
+    return render_template('index.html', title="FOR/TRIX Dashboard")
 
 @app.route('/api/data', methods=['GET'])
 def get_economic_indicators():

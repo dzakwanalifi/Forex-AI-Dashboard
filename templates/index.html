@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forex AI Trader Dashboard</title>
+    <title>FOR/TRIX Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     {% assets "css_all" %}
         <link rel="stylesheet" href="{{ ASSET_URL }}">
     {% endassets %}
@@ -66,21 +67,34 @@
         .markdown-content li { margin-bottom: 0.3em; }
         .markdown-content strong { font-weight: bold; }
         .markdown-content em { font-style: italic; }
+        .header-icon {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+        .indicator-icon {
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
-<body class="bg-gray-50 flex flex-col min-h-screen font-inter">
-    <header class="bg-white shadow-sm">
-        <div class="container mx-auto px-8 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-800">Forex AI Trader Dashboard</h1>
-            <div>
-                <a href="/all-news" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-300">News</a>
-            </div>
+<body class="bg-gray-100 flex flex-col min-h-screen font-inter">
+    <header class="bg-gradient-to-r from-blue-600 to-blue-800 shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white">
+                FOR/TRIX
+            </h1>
+            <nav>
+                <a href="/all-news" class="px-4 py-2 bg-white text-blue-600 rounded-full hover:bg-blue-100 transition duration-300 flex items-center">
+                    <i class="fas fa-newspaper mr-2"></i>
+                    News
+                </a>
+            </nav>
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto px-8 py-8">
+    <main class="flex-grow container mx-auto px-4 py-8">
         <!-- Economic Indicators Section -->
         <div id="economic-indicators" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
             <!-- USD/IDR card akan diinjeksi sebagai elemen pertama di sini -->
@@ -89,7 +103,10 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             <!-- Exchange Rate and Forecast Chart -->
             <div class="lg:col-span-2 bg-white rounded-lg shadow-md overflow-hidden flex flex-col" style="height: 500px;">
-                <h2 class="text-xl font-semibold p-4 bg-gray-50 border-b">USD/IDR Exchange Rate and Forecast</h2>
+                <h2 class="text-xl font-semibold p-4 bg-gray-50 border-b flex items-center">
+                    <i class="fas fa-chart-area text-blue-500 mr-2"></i>
+                    USD/IDR Exchange Rate and Forecast
+                </h2>
                 <div class="p-4 flex flex-col flex-grow">
                     <div class="flex justify-between mb-4">
                         <div>
@@ -117,7 +134,10 @@
 
             <!-- AI Trading Assistant -->
             <div class="bg-white rounded-lg shadow-md overflow-hidden flex flex-col" style="height: 500px;">
-                <h2 class="text-xl font-semibold p-4 bg-gray-50 border-b">AI Trading Assistant</h2>
+                <h2 class="text-xl font-semibold p-4 bg-gray-50 border-b flex items-center">
+                    <i class="fas fa-robot text-blue-500 mr-2"></i>
+                    AI Trading Assistant
+                </h2>
                 <div id="chat-history" class="chat-container flex-grow p-4 bg-gray-50">
                     <!-- Dynamic chat messages will be injected here -->
                 </div>
@@ -135,7 +155,10 @@
 
         <!-- AI Insight Section -->
         <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-            <h2 class="text-xl font-semibold p-4 bg-gray-50 border-b">AI Insight</h2>
+            <h2 class="text-xl font-semibold p-4 bg-gray-50 border-b flex items-center">
+                <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                AI Insight
+            </h2>
             <div class="p-4">
                 <div id="ai-insight-content">
                     <!-- AI Insight content will be injected here -->
@@ -145,7 +168,10 @@
 
         <!-- Latest News Section -->
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <h2 class="text-xl font-semibold p-4 bg-gray-50 border-b">Latest News</h2>
+            <h2 class="text-xl font-semibold p-4 bg-gray-50 border-b flex items-center">
+                <i class="fas fa-newspaper text-green-500 mr-2"></i>
+                Latest News
+            </h2>
             <div class="p-4">
                 <div class="overflow-x-auto scrollbar-hide">
                     <div id="news-items" class="flex space-x-6 pb-4">

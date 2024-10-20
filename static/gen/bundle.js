@@ -224,25 +224,26 @@ function updateEconomicIndicators(data) {
     indicatorsContainer.innerHTML = ''; // Clear existing content
 
     const indicators = [
-        { title: 'USD/IDR', value: data.current_usdidr != null ? data.current_usdidr.toFixed(2) : 'N/A', trend: data.usdidr_trend },
-        { title: 'Inflation US', value: data.inflation_us != null ? data.inflation_us.toFixed(2) + '%' : 'N/A', trend: data.inflation_us_trend },
-        { title: 'Inflation ID', value: data.inflation_id != null ? data.inflation_id.toFixed(2) + '%' : 'N/A', trend: data.inflation_id_trend },
-        { title: 'BI Rate', value: data.bi_rate != null ? data.bi_rate.toFixed(2) + '%' : 'N/A', trend: data.bi_rate_trend },
-        { title: 'Fed Rate', value: data.fed_rate != null ? data.fed_rate.toFixed(2) + '%' : 'N/A', trend: data.fed_rate_trend },
-        { title: 'JKSE', value: data.jkse != null ? data.jkse.toFixed(2) : 'N/A', trend: data.jkse_trend },
-        { title: 'S&P 500', value: data.sp500 != null ? data.sp500.toFixed(2) : 'N/A', trend: data.sp500_trend }
+        { title: 'USD/IDR', value: data.current_usdidr != null ? data.current_usdidr.toFixed(2) : 'N/A', trend: data.usdidr_trend, icon: 'fa-dollar-sign' },
+        { title: 'Inflation US', value: data.inflation_us != null ? data.inflation_us.toFixed(2) + '%' : 'N/A', trend: data.inflation_us_trend, icon: 'fa-percentage' },
+        { title: 'Inflation ID', value: data.inflation_id != null ? data.inflation_id.toFixed(2) + '%' : 'N/A', trend: data.inflation_id_trend, icon: 'fa-percentage' },
+        { title: 'BI Rate', value: data.bi_rate != null ? data.bi_rate.toFixed(2) + '%' : 'N/A', trend: data.bi_rate_trend, icon: 'fa-chart-line' },
+        { title: 'Fed Rate', value: data.fed_rate != null ? data.fed_rate.toFixed(2) + '%' : 'N/A', trend: data.fed_rate_trend, icon: 'fa-university' },
+        { title: 'JKSE', value: data.jkse != null ? data.jkse.toFixed(2) : 'N/A', trend: data.jkse_trend, icon: 'fa-chart-bar' },
+        { title: 'S&P 500', value: data.sp500 != null ? data.sp500.toFixed(2) : 'N/A', trend: data.sp500_trend, icon: 'fa-chart-line' }
     ];
 
     indicators.forEach(indicator => {
         const indicatorHtml = `
-            <div class="bg-white p-4 rounded-lg shadow">
+            <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
                 <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-sm font-medium">${indicator.title}</h3>
-                    <svg class="w-4 h-4 ${indicator.trend === 'up' ? 'text-green-500' : indicator.trend === 'down' ? 'text-red-500' : 'text-gray-500'}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${indicator.trend === 'up' ? 'M5 10l7-7m0 0l7 7m-7-7v18' : indicator.trend === 'down' ? 'M19 14l-7 7m0 0l-7-7m7 7V3' : 'M5 12h14'}"></path>
-                    </svg>
+                    <h3 class="text-sm font-medium flex items-center">
+                        <i class="fas ${indicator.icon} indicator-icon text-blue-500"></i>
+                        ${indicator.title}
+                    </h3>
+                    <i class="fas ${indicator.trend === 'up' ? 'fa-arrow-up text-green-500' : indicator.trend === 'down' ? 'fa-arrow-down text-red-500' : 'fa-minus text-gray-500'}"></i>
                 </div>
-                <div class="text-2xl font-bold">${indicator.value}</div>
+                <div class="text-2xl font-bold ${indicator.trend === 'up' ? 'text-green-600' : indicator.trend === 'down' ? 'text-red-600' : 'text-gray-800'}">${indicator.value}</div>
             </div>`;
         indicatorsContainer.insertAdjacentHTML('beforeend', indicatorHtml);
     });
@@ -257,12 +258,15 @@ function updateNews(data) {
         // Display only the first 10 news items
         data.news.slice(0, 10).forEach(item => {
             const newsHtml = `
-                <div class="w-[300px] flex-shrink-0 bg-gray-50 p-4 rounded-lg">
+                <div class="w-[300px] flex-shrink-0 bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
                     <a href="${item.link || '#'}" target="_blank" rel="noopener noreferrer" class="block">
                         <img src="${item.image || '/static/images/placeholder-image.jpg'}" alt="${item.headline}" class="w-full h-40 object-cover mb-2 rounded">
-                        <h3 class="text-sm font-semibold mb-2 hover:text-blue-600">${item.headline || 'No headline'}</h3>
+                        <h3 class="text-sm font-semibold mb-2 hover:text-blue-600 transition-colors duration-300">${item.headline || 'No headline'}</h3>
                         <p class="text-xs text-gray-500 mb-2">${item.summary || 'No summary available'}</p>
-                        <p class="text-xs text-gray-400">${item.source || 'Unknown source'} - ${item.date ? new Date(item.date).toLocaleDateString() : 'No date'}</p>
+                        <p class="text-xs text-gray-400 flex items-center">
+                            <i class="fas fa-newspaper mr-1"></i>
+                            ${item.source || 'Unknown source'} - ${item.date ? new Date(item.date).toLocaleDateString() : 'No date'}
+                        </p>
                     </a>
                 </div>`;
             newsContainer.insertAdjacentHTML('beforeend', newsHtml);
@@ -367,7 +371,7 @@ function displayWelcomeMessage() {
     const chatHistory = document.getElementById('chat-history');
     const welcomeMessage = `
         <div class="chat-message assistant-message">
-            Selamat datang di AI Trading Assistant! Saya siap membantu Anda dengan analisis dan rekomendasi trading forex USD/IDR. Silakan ajukan pertanyaan atau minta saran tentang kondisi pasar saat ini.
+            Selamat datang di FOR/TRIX AI Trading Assistant! Saya siap membantu Anda dengan analisis dan rekomendasi trading forex USD/IDR. Silakan ajukan pertanyaan atau minta saran tentang kondisi pasar saat ini.
         </div>`;
     chatHistory.innerHTML = welcomeMessage;
 }
@@ -431,6 +435,21 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', () => {
         if (chart) {
             chart.resize();
+        }
+    });
+
+    // Add hover effects to economic indicators
+    const economicIndicators = document.getElementById('economic-indicators');
+    economicIndicators.addEventListener('mouseover', (event) => {
+        const indicator = event.target.closest('.bg-white');
+        if (indicator) {
+            indicator.classList.add('transform', 'scale-105', 'transition-transform', 'duration-300');
+        }
+    });
+    economicIndicators.addEventListener('mouseout', (event) => {
+        const indicator = event.target.closest('.bg-white');
+        if (indicator) {
+            indicator.classList.remove('transform', 'scale-105', 'transition-transform', 'duration-300');
         }
     });
 });
