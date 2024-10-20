@@ -7,11 +7,8 @@ WORKDIR /app
 # Copy the current directory contents into the container at /app
 COPY . /app
 
-# Install uv
-RUN pip install uv
-
-# Install any needed packages specified in requirements.txt using uv
-RUN uv pip install -r requirements.txt
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Node.js and npm
 RUN apt-get update && apt-get install -y nodejs npm
