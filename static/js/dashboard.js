@@ -1,9 +1,12 @@
+import { processTechnicalData, predictFuture } from './lstm_model.js';
+
 const API_BASE_URL = '/api';
 let chart; // Global variable to store the chart instance
 let sessionId; // Global variable to store the session ID
 let globalEconomicData; // Global variable to store economic data
 let globalHistoricalData;
 let globalPredictions;
+let lstmModel;
 
 // Function to generate a new session ID
 function generateSessionId() {
@@ -23,6 +26,9 @@ function updateChart(historicalData, predictions, forecastDays, historicalDays) 
         return;
     }
 
+    console.log("Historical Data:", historicalData);
+    console.log("Predictions:", predictions);
+
     const filteredHistoricalData = historicalData.slice(-historicalDays);
     const filteredPredictions = predictions.slice(0, forecastDays);
 
@@ -36,6 +42,12 @@ function updateChart(historicalData, predictions, forecastDays, historicalDays) 
     const historicalValues = filteredHistoricalData.map(d => d.Close);
     const predictionValues = filteredPredictions.map(d => d.predicted_usdidr);
 
+    // Menambahkan titik terakhir dari data historis ke awal prediksi
+    const lastHistoricalValue = historicalValues[historicalValues.length - 1];
+    const combinedPredictionValues = [lastHistoricalValue, ...predictionValues];
+
+    console.log("Chart Data:", { labels, historicalValues, combinedPredictionValues });
+
     if (chart) {
         chart.destroy();
     }
@@ -46,13 +58,13 @@ function updateChart(historicalData, predictions, forecastDays, historicalDays) 
             labels: labels,
             datasets: [{
                 label: 'Historical USD/IDR',
-                data: [...historicalValues, ...Array(filteredPredictions.length).fill(null)],
+                data: historicalValues,
                 borderColor: 'rgb(75, 192, 192)',
                 tension: 0.1,
                 pointRadius: 2,
             }, {
                 label: 'Predicted USD/IDR',
-                data: [...Array(filteredHistoricalData.length).fill(null), ...predictionValues],
+                data: [...Array(historicalValues.length - 1).fill(null), ...combinedPredictionValues],
                 borderColor: 'rgb(255, 99, 132)',
                 borderDash: [5, 5],
                 tension: 0.1,
@@ -89,8 +101,8 @@ function updateChart(historicalData, predictions, forecastDays, historicalDays) 
                         display: true,
                         text: 'USD/IDR Exchange Rate'
                     },
-                    suggestedMin: Math.min(...historicalValues, ...predictionValues) * 0.99,
-                    suggestedMax: Math.max(...historicalValues, ...predictionValues) * 1.01
+                    suggestedMin: Math.min(...historicalValues, ...combinedPredictionValues) * 0.99,
+                    suggestedMax: Math.max(...historicalValues, ...combinedPredictionValues) * 1.01
                 }
             },
             plugins: {
@@ -100,21 +112,6 @@ function updateChart(historicalData, predictions, forecastDays, historicalDays) 
                 },
                 legend: {
                     position: 'top',
-                },
-                zoom: {
-                    pan: {
-                        enabled: true,
-                        mode: 'x',
-                    },
-                    zoom: {
-                        wheel: {
-                            enabled: true,
-                        },
-                        pinch: {
-                            enabled: true
-                        },
-                        mode: 'x',
-                    }
                 }
             }
         }
@@ -146,6 +143,18 @@ async function fetchAllData() {
         console.error('Error fetching data:', error);
         hideLoadingPopup();
         throw error;
+    }
+}
+
+async function initializeLSTM(data) {
+    try {
+        const { model, dataX } = await processTechnicalData(data.usdidr_data);
+        lstmModel = model;
+        globalPredictions = await predictFuture(model, dataX, 14);
+        console.log("LSTM model initialized and predictions made:", globalPredictions);
+        updateChart(data.usdidr_history, globalPredictions, 14, 30);
+    } catch (error) {
+        console.error("Error initializing LSTM model:", error);
     }
 }
 
@@ -396,9 +405,14 @@ document.addEventListener('DOMContentLoaded', () => {
         updateChart(globalHistoricalData, globalPredictions, parseInt(forecastDaysSelect.value), historicalDays);
     });
 
-    forecastDaysSelect.addEventListener('change', (event) => {
+    forecastDaysSelect.addEventListener('change', async (event) => {
         const forecastDays = parseInt(event.target.value);
-        fetchEconomicIndicators(forecastDays);
+        if (lstmModel) {
+            globalPredictions = await predictFuture(lstmModel, globalEconomicData.usdidr_data.slice(-5), forecastDays);
+            updateChart(globalHistoricalData, globalPredictions, forecastDays, parseInt(historicalDaysSelect.value));
+        } else {
+            await fetchEconomicIndicators(forecastDays);
+        }
     });
 
     // Initial load

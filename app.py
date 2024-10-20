@@ -2,7 +2,6 @@ from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 from services.data_loader import load_inflation_data_us, load_inflation_data_id, load_bi_rate, load_fed_rate, load_jkse, load_sp500, load_usdidr
 from models.technical_indicators import apply_technical_indicators
-from models.lstm_model import process_technical_data, predict_future
 from services.news_service import get_combined_news 
 from services.gemini_service import generate_recommendation, generate_analysis_report_and_recommendation
 import math
@@ -14,7 +13,6 @@ import pandas as pd
 from flask_assets import Environment, Bundle
 import logging
 import os
-import tensorflow as tf
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 CORS(app)
@@ -42,14 +40,24 @@ last_prediction_time = None
 prediction_cache_duration = timedelta(hours=1)  # Cache duration, adjust as needed
 
 def safe_float(value):
-    return float(value) if value is not None and not math.isnan(value) else None
+    if isinstance(value, dict):
+        # Jika nilai adalah dictionary, coba ambil nilai 'predicted_usdidr'
+        value = value.get('predicted_usdidr', None)
+    
+    if value is None:
+        return None
+    try:
+        float_value = float(value)
+        return float_value if not math.isnan(float_value) else None
+    except (ValueError, TypeError):
+        return None
 
 def get_or_update_predictions(forecast_days=14):
     global global_predictions, last_prediction_time
     
     current_time = datetime.now()
     if global_predictions is None or last_prediction_time is None or (current_time - last_prediction_time) > prediction_cache_duration:
-        # Load data and make predictions
+        # Load data
         _, _, _, usdidr_full = load_usdidr()
         if usdidr_full.empty:
             app.logger.warning("USD/IDR data is empty. Unable to make predictions.")
@@ -60,11 +68,12 @@ def get_or_update_predictions(forecast_days=14):
             app.logger.warning("Technical indicators data is empty. Unable to make predictions.")
             return []
         
-        model, dataX, dataY, scaler = process_technical_data(usdidr_with_indicators)
-        global_predictions = predict_future(model, dataX, scaler, 11, forecast_days)
+        # Kirim data ke frontend untuk diproses
+        global_predictions = usdidr_with_indicators.to_dict('records')
         last_prediction_time = current_time
     
-    return global_predictions[:forecast_days]
+    # Pastikan kita hanya mengembalikan nilai prediksi, bukan seluruh dictionary
+    return [safe_float(pred.get('Close', pred.get('predicted_usdidr', None))) for pred in global_predictions[-forecast_days:]]
 
 @app.route('/')
 def index():
@@ -276,19 +285,6 @@ assets.register('js_all', js)
 @app.route('/all-news')
 def all_news():
     return render_template('all_news.html')
-
-# Konfigurasi TensorFlow
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TensorFlow logging
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
-
-# Konfigurasi GPU jika tersedia
-gpus = tf.config.experimental.list_physical_devices('GPU')
-if gpus:
-    try:
-        for gpu in gpus:
-            tf.config.experimental.set_memory_growth(gpu, True)
-    except RuntimeError as e:
-        print(e)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
