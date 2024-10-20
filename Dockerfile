@@ -10,15 +10,6 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Node.js and npm
-RUN apt-get update && apt-get install -y nodejs npm
-
-# Install JavaScript dependencies
-RUN npm install
-
-# Build webpack assets
-RUN npm run build || true
-
 # Make port 5000 available to the world outside this container
 EXPOSE 5000
 
